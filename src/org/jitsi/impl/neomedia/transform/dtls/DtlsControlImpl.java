@@ -754,6 +754,7 @@ public class DtlsControlImpl
     @Override
     public void setConnector(AbstractRTPConnector connector)
     {
+        logger.info("[FMDB] - Setting connector");ß
         properties.put(Properties.CONNECTOR_PNAME, connector);
     }
 

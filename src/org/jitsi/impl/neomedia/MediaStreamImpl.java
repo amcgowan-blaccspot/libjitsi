@@ -2518,7 +2518,7 @@ public class MediaStreamImpl
             // Trigger the re-configuration of RTP header extensions
             addRTPExtension((byte)0, null);
         }
-
+        logger.info("[FMDB] - Setting new connector");
         srtpControl.setConnector(newValue);
 
         /*
@@ -2596,6 +2596,7 @@ public class MediaStreamImpl
     @Override
     public void setConnector(StreamConnector connector)
     {
+        logger.info("[FMDB] - Setting connector on MediaStreamImpl");
         if (connector == null)
             throw new NullPointerException("connector");
 

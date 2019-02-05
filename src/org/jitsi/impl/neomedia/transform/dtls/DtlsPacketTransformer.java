@@ -826,6 +826,7 @@ public class DtlsPacketTransformer
         }
         else if (Properties.CONNECTOR_PNAME.equals(propertyName))
         {
+            logger.info("[FMDB] - Connector property changed");
             setConnector(
                     (AbstractRTPConnector) getProperties().get(propertyName));
         }
@@ -994,6 +995,7 @@ public class DtlsPacketTransformer
             TlsPeer tlsPeer,
             DatagramTransport datagramTransport)
     {
+        logger.info("[FMDB] - Running InConnect thread");
         DTLSTransport dtlsTransport = null;
         final boolean srtp = !isSrtpDisabled();
         int srtpProtectionProfile = 0;
@@ -1002,6 +1004,7 @@ public class DtlsPacketTransformer
         // DTLS client
         if (dtlsProtocol instanceof DTLSClientProtocol)
         {
+            logger.info("[FMDB] - We are a client");
             DTLSClientProtocol dtlsClientProtocol
                 = (DTLSClientProtocol) dtlsProtocol;
             TlsClientImpl tlsClient = (TlsClientImpl) tlsPeer;
@@ -1012,6 +1015,7 @@ public class DtlsPacketTransformer
                     break;
                 try
                 {
+                    logger.info("[FMDB] - Starting DTLS - Client");
                     dtlsTransport
                         = dtlsClientProtocol.connect(
                                 tlsClient, 
@@ -1039,6 +1043,7 @@ public class DtlsPacketTransformer
         // DTLS server
         else if (dtlsProtocol instanceof DTLSServerProtocol)
         {
+            logger.info("[FMDB] - We are a server");
             DTLSServerProtocol dtlsServerProtocol
                 = (DTLSServerProtocol) dtlsProtocol;
             TlsServerImpl tlsServer = (TlsServerImpl) tlsPeer;
@@ -1049,6 +1054,7 @@ public class DtlsPacketTransformer
                     break;
                 try
                 {
+                    logger.info("[FMDB] - Starting DTLS - Server");
                     dtlsTransport
                         = dtlsServerProtocol.accept(
                                 tlsServer,
@@ -1150,6 +1156,7 @@ public class DtlsPacketTransformer
      */
     private void setConnector(AbstractRTPConnector connector)
     {
+        logger.info("[FMDB] - Setting connector");
         if (this.connector != connector)
         {
             AbstractRTPConnector oldValue = this.connector;
@@ -1175,6 +1182,7 @@ public class DtlsPacketTransformer
      */
     private synchronized void setMediaType(MediaType mediaType)
     {
+        logger.info("[FMDB] - Setting media type");
         if (this.mediaType != mediaType)
         {
             MediaType oldValue = this.mediaType;
@@ -1223,6 +1231,7 @@ public class DtlsPacketTransformer
      */
     private synchronized void start()
     {
+        logger.info("[FMDB] - Starting DTLS");
         if (this.datagramTransport != null)
         {
             if (this.connectThread == null && dtlsTransport == null)
@@ -1271,6 +1280,7 @@ public class DtlsPacketTransformer
 
         datagramTransport.setConnector(connector);
 
+        logger.info("[FMDB] - Starting connect thread");
         Thread connectThread
             = new Thread()
             {
