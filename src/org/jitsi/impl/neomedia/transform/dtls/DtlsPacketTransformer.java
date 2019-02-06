@@ -767,9 +767,15 @@ public class DtlsPacketTransformer
 
     private synchronized void maybeStart()
     {
+        logger.info("[FMDB] - DtlsPacketTransformer - Attempting to start " + this.debugID);
         if (this.mediaType != null && this.connector != null && !started)
         {
+            logger.info("[FMDB] - DtlsPacketTransformer - Good to go on the start " + this.debugID);
             start();
+        } else {
+            String _media = this.mediaType != null ? " media set " : " media NOT set ";
+            String _connector = this.connector != null ? " connector set " : " connector NOT set ";
+            logger.info("[FMDB] - DtlsPacketTransformer - Not ready yet " + this.debugID + _media + _connector);
         }
     }
 
@@ -1160,6 +1166,7 @@ public class DtlsPacketTransformer
         logger.info("[FMDB] - DtlsPacketTransformer - Setting connector " + this.debugID);
         if (this.connector != connector)
         {
+            logger.info("[FMDB] - DtlsPacketTransformer - connector change " + this.debugID);
             AbstractRTPConnector oldValue = this.connector;
 
             this.connector = connector;
@@ -1169,8 +1176,11 @@ public class DtlsPacketTransformer
             if (datagramTransport != null)
                 datagramTransport.setConnector(connector);
 
-            if (connector != null)
+            if (connector != null) {
                 maybeStart();
+            } else {
+                logger.info("[FMDB] - DtlsPacketTransformer - Connector was null after set " + this.debugID);
+            }
         }
     }
 
