@@ -285,7 +285,7 @@ public class DtlsPacketTransformer
         this.transformEngine = transformEngine;
         this.componentID = componentID;
 
-        this.debugID = UUID.randomUUID() + " " + componentID;
+        this.debugID = " [---] UUID: " + UUID.randomUUID() + " ComponentID: " + componentID;
 
         // Track the DTLS properties which control the conditional behaviors of
         // DtlsPacketTransformer.
