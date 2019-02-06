@@ -269,7 +269,17 @@ public class DtlsPacketTransformer
     private boolean started = false;
 
     private String debugID = "";
+    private Boolean isChannelAndEndpointSet = false;
 
+    public void setChannelAndEndpoint(String channel, String endpoint) {
+        if (!isChannelAndEndpointSet) {
+            isChannelAndEndpointSet = true;
+            this.debugID += " Channel: " + channel + " Endpoint " + endpoint;
+            logger.info("[FMDB] - DtlsPacketTransformer - updating endpoint detail: " + this.debugID);
+        } else {
+            logger.info("[FMDB] - Attempted to set channel and endpoint to " + channel + " " + endpoint + " but it is already set " + this.debugID);
+        }
+    }
     /**
      * Initializes a new <tt>DtlsPacketTransformer</tt> instance.
      *
@@ -285,7 +295,7 @@ public class DtlsPacketTransformer
         this.transformEngine = transformEngine;
         this.componentID = componentID;
 
-        this.debugID = " [---] UUID: " + UUID.randomUUID() + " ComponentID: " + componentID;
+        this.debugID += " [---] UUID: " + UUID.randomUUID() + " ComponentID: " + componentID;
 
         // Track the DTLS properties which control the conditional behaviors of
         // DtlsPacketTransformer.
