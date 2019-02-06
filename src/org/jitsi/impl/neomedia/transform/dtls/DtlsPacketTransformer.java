@@ -1164,6 +1164,14 @@ public class DtlsPacketTransformer
     private void setConnector(AbstractRTPConnector connector)
     {
         logger.info("[FMDB] - DtlsPacketTransformer - Setting connector " + this.debugID);
+
+        if (this.connector == null) {
+            logger.info("[FMDB] - Current connector is null " + this.debugID);
+        }
+        if (connector == null) {
+            logger.info("[FMDB] - New connector is null. WHY? " + this.debugID);
+        }
+
         if (this.connector != connector)
         {
             logger.info("[FMDB] - DtlsPacketTransformer - connector change " + this.debugID);
@@ -1181,6 +1189,8 @@ public class DtlsPacketTransformer
             } else {
                 logger.info("[FMDB] - DtlsPacketTransformer - Connector was null after set " + this.debugID);
             }
+        } else {
+            logger.info("[FMDB] - Connector was already set - there was no conector change: " + this.debugID);
         }
     }
 

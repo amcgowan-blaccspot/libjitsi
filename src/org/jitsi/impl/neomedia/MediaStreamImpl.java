@@ -416,8 +416,11 @@ public class MediaStreamImpl
         this.srtpControl.registerUser(this);
         this.mediaStreamStatsImpl = new MediaStreamStats2Impl(this);
 
-        if (connector != null)
+
+        if (connector != null) {
+            logger.info("[FMDB] - MediaStreamImpl - Set connector? ");
             setConnector(connector);
+        }
 
         if (logger.isTraceEnabled())
         {
