@@ -21,6 +21,7 @@ import java.security.*;
 import java.util.*;
 
 import org.bouncycastle.crypto.tls.*;
+
 import org.ice4j.ice.*;
 import org.jitsi.impl.neomedia.*;
 import org.jitsi.impl.neomedia.transform.*;
@@ -267,6 +268,8 @@ public class DtlsPacketTransformer
 
     private boolean started = false;
 
+    private String debugID = "";
+
     /**
      * Initializes a new <tt>DtlsPacketTransformer</tt> instance.
      *
@@ -281,6 +284,8 @@ public class DtlsPacketTransformer
     {
         this.transformEngine = transformEngine;
         this.componentID = componentID;
+
+        this.debugID = UUID.randomUUID() + " " + componentID;
 
         // Track the DTLS properties which control the conditional behaviors of
         // DtlsPacketTransformer.
@@ -309,6 +314,7 @@ public class DtlsPacketTransformer
      */
     private void closeDatagramTransport()
     {
+        logger.info("[FMDB] - DtlsPacketTransformer - Attempting to close " + this.debugID);
         if (datagramTransport != null)
         {
             try
@@ -325,6 +331,7 @@ public class DtlsPacketTransformer
                             + datagramTransport.getClass(),
                         ioe);
             }
+            logger.info("[FMDB] - DtlsPacketTransformer - Setting to null " + this.debugID);
             datagramTransport = null;
         }
     }
@@ -800,7 +807,8 @@ public class DtlsPacketTransformer
         }
         else if (Properties.CONNECTOR_PNAME.equals(propertyName))
         {
-            logger.info("[FMDB] - Connector property changed");
+
+            logger.info("[FMDB] - DtlsPacketTransformer - Connector property changed " + this.debugID);
             setConnector(
                     (AbstractRTPConnector) getProperties().get(propertyName));
         }
@@ -875,7 +883,7 @@ public class DtlsPacketTransformer
             // This should never happen.
             logger.warn(
                     "Dropping a DTLS packet, because it was received on the"
-                        + " RTCP channel while rtcpmux is in use.");
+                        + " RTCP channel while rtcpmux is in use. " + this.debugID);
             return;
         }
 
@@ -887,7 +895,7 @@ public class DtlsPacketTransformer
                 logger.warn(
                         "Dropping a DTLS packet. This DtlsPacketTransformer has"
                             + " not been started successfully or has been"
-                            + " closed.");
+                            + " closed. " + this.debugID);
             }
             else
             {
@@ -969,7 +977,7 @@ public class DtlsPacketTransformer
             TlsPeer tlsPeer,
             DatagramTransport datagramTransport)
     {
-        logger.info("[FMDB] - Running InConnect thread");
+        logger.info("[FMDB] - DtlsPacketTransformer - Running InConnect thread " + this.debugID);
         DTLSTransport dtlsTransport = null;
         final boolean srtp = !isSrtpDisabled();
         int srtpProtectionProfile = 0;
@@ -978,7 +986,7 @@ public class DtlsPacketTransformer
         // DTLS client
         if (dtlsProtocol instanceof DTLSClientProtocol)
         {
-            logger.info("[FMDB] - We are a client");
+            logger.info("[FMDB] - DtlsPacketTransformer - We are a client " + this.debugID);
             DTLSClientProtocol dtlsClientProtocol
                 = (DTLSClientProtocol) dtlsProtocol;
             TlsClientImpl tlsClient = (TlsClientImpl) tlsPeer;
@@ -989,7 +997,8 @@ public class DtlsPacketTransformer
                     break;
                 try
                 {
-                    logger.info("[FMDB] - Starting DTLS - Client");
+
+                    logger.info("[FMDB] - DtlsPacketTransformer - Starting DTLS - Client " + this.debugID);
                     dtlsTransport
                         = dtlsClientProtocol.connect(
                                 tlsClient, 
@@ -1017,7 +1026,7 @@ public class DtlsPacketTransformer
         // DTLS server
         else if (dtlsProtocol instanceof DTLSServerProtocol)
         {
-            logger.info("[FMDB] - We are a server");
+            logger.info("[FMDB] - DtlsPacketTransformer - We are a server " + this.debugID);
             DTLSServerProtocol dtlsServerProtocol
                 = (DTLSServerProtocol) dtlsProtocol;
             TlsServerImpl tlsServer = (TlsServerImpl) tlsPeer;
@@ -1028,7 +1037,8 @@ public class DtlsPacketTransformer
                     break;
                 try
                 {
-                    logger.info("[FMDB] - Starting DTLS - Server");
+                    logger.info("[FMDB] - DtlsPacketTransformer - Starting DTLS - Server " + this.debugID);
+
                     dtlsTransport
                         = dtlsServerProtocol.accept(
                                 tlsServer,
@@ -1044,8 +1054,10 @@ public class DtlsPacketTransformer
                     {
                         break;
                     }
+                    logger.info("[FMDB] - DtlsPacketTransformer - No connection from client " + this.debugID);
                 }
             }
+            logger.info("[FMDB] - DtlsPacketTransformer - Accepted - " + this.debugID);
             if (dtlsTransport != null && srtp)
             {
                 srtpProtectionProfile = tlsServer.getChosenProtectionProfile();
@@ -1054,10 +1066,12 @@ public class DtlsPacketTransformer
         }
         else
         {
+            logger.info("[FMDB] - DtlsPacketTransformer - Illegal state " + this.debugID);
             // It MUST be either a DTLS client or a DTLS server.
             throw new IllegalStateException("dtlsProtocol");
         }
 
+        logger.info("[FMDB] - DtlsPacketTransformer - Init " + this.debugID);
         SinglePacketTransformer srtpTransformer
             = (dtlsTransport == null || !srtp)
                 ? null
@@ -1069,13 +1083,16 @@ public class DtlsPacketTransformer
             if (Thread.currentThread().equals(this.connectThread)
                     && datagramTransport.equals(this.datagramTransport))
             {
+                logger.info("[FMDB] - DtlsPacketTransformer - SetSrtp " + this.debugID);
                 this.dtlsTransport = dtlsTransport;
                 setSrtpTransformer(srtpTransformer);
             }
             closeSRTPTransformer = (_srtpTransformer != srtpTransformer);
         }
-        if (closeSRTPTransformer && srtpTransformer != null)
+        if (closeSRTPTransformer && srtpTransformer != null) {
+            logger.info("[FMDB] - DtlsPacketTransformer - Closing SRTP " + this.debugID);
             srtpTransformer.close();
+        }
     }
 
     /**
@@ -1130,7 +1147,7 @@ public class DtlsPacketTransformer
      */
     private void setConnector(AbstractRTPConnector connector)
     {
-        logger.info("[FMDB] - Setting connector");
+        logger.info("[FMDB] - DtlsPacketTransformer - Setting connector " + this.debugID);
         if (this.connector != connector)
         {
             AbstractRTPConnector oldValue = this.connector;
@@ -1156,7 +1173,7 @@ public class DtlsPacketTransformer
      */
     private synchronized void setMediaType(MediaType mediaType)
     {
-        logger.info("[FMDB] - Setting media type");
+        logger.info("[FMDB] - - DtlsPacketTransformer - Setting media type " + this.debugID);
         if (this.mediaType != mediaType)
         {
             MediaType oldValue = this.mediaType;
@@ -1205,7 +1222,7 @@ public class DtlsPacketTransformer
      */
     private synchronized void start()
     {
-        logger.info("[FMDB] - Starting DTLS");
+        logger.info("[FMDB] - - DtlsPacketTransformer - Starting DTLS " + this.debugID);
         if (this.datagramTransport != null)
         {
             if (this.connectThread == null && dtlsTransport == null)
@@ -1254,7 +1271,7 @@ public class DtlsPacketTransformer
 
         datagramTransport.setConnector(connector);
 
-        logger.info("[FMDB] - Starting connect thread");
+        logger.info("[FMDB] - - DtlsPacketTransformer - Starting connect thread " + this.debugID);
         Thread connectThread
             = new Thread()
             {
@@ -1263,6 +1280,7 @@ public class DtlsPacketTransformer
                 {
                     try
                     {
+                        logger.info("[FMDB] - DtlsPacketTansformer - connectThread " + DtlsPacketTransformer.this.debugID);
                         runInConnectThread(
                                 dtlsProtocolObj,
                                 tlsPeer,
@@ -1284,14 +1302,23 @@ public class DtlsPacketTransformer
                 DtlsPacketTransformer.class.getName() + ".connectThread");
 
         this.connectThread = connectThread;
+
+        if (datagramTransport != null) {
+            logger.info("[FMDB] - DtlsPacketTransformer - Datagram is not null. Setting. " + this.debugID);
+        } else {
+            logger.info("[FMDB] - DtlsPacketTransformer - NULL DATAGRAM - " + this.debugID);
+        }
+
         this.datagramTransport = datagramTransport;
 
         boolean started = false;
 
         try
         {
+            logger.info("[FMDB] - DtlsPacketTransformer - Starting connect thread - " + this.debugID);
             connectThread.start();
             started = true;
+            logger.info("[FMDB] - DtlsPacketTransformer - Connect thread started - " + this.debugID);
         }
         finally
         {
@@ -1299,8 +1326,10 @@ public class DtlsPacketTransformer
             {
                 if (connectThread.equals(this.connectThread))
                     this.connectThread = null;
-                if (datagramTransport.equals(this.datagramTransport))
+                if (datagramTransport.equals(this.datagramTransport)) {
+                    logger.info("[FMDB] - DtlsPacketTransformer - Shutting down datagram transport. " + this.debugID);
                     this.datagramTransport = null;
+                }
             }
         }
 
@@ -1312,6 +1341,7 @@ public class DtlsPacketTransformer
      */
     private synchronized void stop()
     {
+        logger.info("[FMDB] - DtlsPacketTransformer - Stopping " + this.debugID);
         started = false;
         if (connectThread != null)
             connectThread = null;
@@ -1344,6 +1374,7 @@ public class DtlsPacketTransformer
         {
             try
             {
+                logger.info("[FMDB] - DtlsPacketTransformer - Closing " + this.debugID);
                 closeDatagramTransport();
             }
             finally
