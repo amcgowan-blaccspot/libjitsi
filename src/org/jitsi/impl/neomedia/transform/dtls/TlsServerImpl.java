@@ -16,6 +16,7 @@
 package org.jitsi.impl.neomedia.transform.dtls;
 
 import java.io.*;
+import java.time.Instant;
 import java.util.*;
 
 import org.bouncycastle.crypto.tls.*;
@@ -29,6 +30,15 @@ import org.jitsi.util.*;
 public class TlsServerImpl
     extends DefaultTlsServer
 {
+    private String debugId = "";
+    public void setDebugId(String d) {
+        debugId = d;
+    }
+
+    private void log(String msg) {
+        logger.info("[FMDB] - TlsServer - " + msg + " " + Instant.now().toString() + " " + this.debugId);
+    }
+
     /**
      * The <tt>Logger</tt> used by the <tt>TlsServerImpl</tt> class and its
      * instances to print debug information.
@@ -250,11 +260,10 @@ public class TlsServerImpl
     {
         Hashtable serverExtensions = getServerExtensionsOverride();
 
-        logger.info("[FMDB] - GetServerExtensions");
-
+        log("GetServerExtensions");
         if (isSrtpDisabled())
         {
-            logger.info("[FMDB] - Not getting SRTP extensions");
+            log("SrtpDisabled - Returning server extensions");
             return serverExtensions;
         }
 
@@ -312,14 +321,17 @@ public class TlsServerImpl
     private Hashtable getServerExtensionsOverride()
         throws IOException
     {
+        log("GetServerExtensionsOverride")
         if (encryptThenMACOffered && allowEncryptThenMAC())
         {
+            log("Override - Allowexcryptmac");
             // draft-ietf-tls-encrypt-then-mac-03 3. If a server receives an
             // encrypt-then-MAC request extension from a client and then selects
             // a stream or AEAD cipher suite, it MUST NOT send an
             // encrypt-then-MAC response extension back to the client.
             if (TlsUtils.isBlockCipherSuite(selectedCipherSuite))
             {
+                log("Add encrypt then mac");
                 TlsExtensionsUtils.addEncryptThenMACExtension(
                         checkServerExtensions());
             }
@@ -328,6 +340,7 @@ public class TlsServerImpl
         if (maxFragmentLengthOffered >= 0
                 && MaxFragmentLength.isValid(maxFragmentLengthOffered))
         {
+            log("max fragment length");
             TlsExtensionsUtils.addMaxFragmentLengthExtension(
                     checkServerExtensions(),
                     maxFragmentLengthOffered);
@@ -335,12 +348,14 @@ public class TlsServerImpl
 
         if (truncatedHMacOffered && allowTruncatedHMac())
         {
+            log("truncated mac");
             TlsExtensionsUtils.addTruncatedHMacExtension(
                     checkServerExtensions());
         }
 
         if (TlsECCUtils.isECCCipherSuite(selectedCipherSuite))
         {
+            log("Selected cipher");
             /*
              * RFC 4492 5.2. A server that selects an ECC cipher suite in
              * response to a ClientHello message including a Supported Point
@@ -361,6 +376,7 @@ public class TlsServerImpl
                     serverECPointFormats);
         }
 
+        log("Finshed server ext");
         return serverExtensions;
     }
 
@@ -375,6 +391,7 @@ public class TlsServerImpl
     @Override
     public void init(TlsServerContext context)
     {
+        log("Init");
         // TODO Auto-generated method stub
         super.init(context);
     }
@@ -405,6 +422,7 @@ public class TlsServerImpl
             String message,
             Throwable cause)
     {
+        log("Alert: " + message);
         packetTransformer.notifyAlertRaised(
                 this,
                 alertLevel, alertDescription, message, cause);
@@ -419,6 +437,7 @@ public class TlsServerImpl
     {
         try
         {
+            log("notify cert - verify");
             getDtlsControl().verifyAndValidateCertificate(clientCertificate);
         }
         catch (Exception e)
@@ -444,13 +463,13 @@ public class TlsServerImpl
     public void processClientExtensions(Hashtable clientExtensions)
         throws IOException
     {
-        logger.info("[FMDB] - Process Client Extensions");
+        log("Process Client Extensions");
         if (isSrtpDisabled())
         {
 
-            logger.info("[FMDB] - TlsServerImpl - use_srtp check passed. Not getting client extensions");
+            log("use_srtp check passed. Not getting client extensions");
             super.processClientExtensions(clientExtensions);
-            logger.info("[FMDB] - TlsServerImpl - client extensions complete.");
+            log("client extensions complete.");
             return;
         }
 

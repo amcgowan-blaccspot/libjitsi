@@ -1064,6 +1064,7 @@ public class DtlsPacketTransformer
             if (this.isSrtpDisabled) {
                 logger.info("[FMDB] - Disabling srtp for single data channel " + this.debugID);
                 tlsServer.setSrtpDisabled();
+                tlsServer.setDebugId(this.debugID);
             }
 
             for (int i = CONNECT_TRIES - 1; i >= 0; i--)
@@ -1091,14 +1092,17 @@ public class DtlsPacketTransformer
                 }
                 catch (IOException ioe)
                 {
+                    ioe.printStackTrace();
+                    logger.info("[FMDB] - DtlsPacketTransformer - Accept failed " + this.debugID);
                     if (!handleRunInConnectThreadException(
                             ioe,
                             "Failed to accept a connection from a DTLS client!",
                             i))
                     {
+                        logger.info("[FMDB] - handleRunInConnectThreadException - DtlsPacketTransformer - No connection from client " + this.debugID);
                         break;
                     }
-                    logger.info("[FMDB] - DtlsPacketTransformer - No connection from client " + this.debugID);
+                    logger.info("[FMDB] - NON-EXCEPTIOn - DtlsPacketTransformer - No connection from client " + this.debugID);
                 }
             }
             logger.info("[FMDB] - DtlsPacketTransformer - Accepted - " + this.debugID);
