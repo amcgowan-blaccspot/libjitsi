@@ -321,7 +321,7 @@ public class TlsServerImpl
     private Hashtable getServerExtensionsOverride()
         throws IOException
     {
-        log("GetServerExtensionsOverride")
+        log("GetServerExtensionsOverride");
         if (encryptThenMACOffered && allowEncryptThenMAC())
         {
             log("Override - Allowexcryptmac");
