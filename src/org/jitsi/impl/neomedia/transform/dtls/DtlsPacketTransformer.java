@@ -1054,6 +1054,10 @@ public class DtlsPacketTransformer
             DTLSServerProtocol dtlsServerProtocol
                 = (DTLSServerProtocol) dtlsProtocol;
             TlsServerImpl tlsServer = (TlsServerImpl) tlsPeer;
+            if (this.isSrtpDisabled) {
+                logger.info("[FMDB] - Disabling srtp for single data channel");
+                tlsServer.setSrtpDisabled();
+            }
 
             for (int i = CONNECT_TRIES - 1; i >= 0; i--)
             {
