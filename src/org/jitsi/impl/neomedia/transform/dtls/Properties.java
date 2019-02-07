@@ -69,7 +69,7 @@ class Properties
      * Indicates whether this <tt>DtlsControl</tt> will work in DTLS/SRTP or
      * pure DTLS mode.
      */
-    private final boolean srtpDisabled;
+    private boolean srtpDisabled;
 
     /**
      * Initializes a new {@code Properties} instance.
@@ -118,6 +118,10 @@ class Properties
     public boolean isSrtpDisabled()
     {
         return srtpDisabled;
+    }
+
+    public void setSrtpDisabled() {
+        this.srtpDisabled = true;
     }
 
     /**

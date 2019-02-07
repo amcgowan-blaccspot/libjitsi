@@ -224,6 +224,10 @@ public class TlsClientImpl
         return getProperties().isSrtpDisabled();
     }
 
+    public void setSrtpDisabled() {
+        getProperties().setSrtpDisabled();
+    }
+
     /**
      * {@inheritDoc}
      *

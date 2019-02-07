@@ -981,6 +981,11 @@ public class DtlsPacketTransformer
         }
     }
 
+    private boolean isSrtpDisabled = false;
+    public void disableSrtp() {
+        isSrtpDisabled = true;
+    }
+
     /**
      * Runs in {@link #connectThread} to initialize {@link #dtlsTransport}.
      *
@@ -1006,7 +1011,10 @@ public class DtlsPacketTransformer
             DTLSClientProtocol dtlsClientProtocol
                 = (DTLSClientProtocol) dtlsProtocol;
             TlsClientImpl tlsClient = (TlsClientImpl) tlsPeer;
-
+            if (this.isSrtpDisabled) {
+                logger.info("[FMDB] - Disabling srtp for single data channel");
+                tlsClient.setSrtpDisabled();
+            }
             for (int i = CONNECT_TRIES - 1; i >= 0; i--)
             {
                 if (!enterRunInConnectThreadLoop(i, datagramTransport))
