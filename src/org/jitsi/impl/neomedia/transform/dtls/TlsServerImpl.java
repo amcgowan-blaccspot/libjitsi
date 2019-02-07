@@ -443,6 +443,7 @@ public class TlsServerImpl
     {
         if (isSrtpDisabled())
         {
+            logger.info("[FMDB] - TlsServerImpl - use_srtp check passed.");
             super.processClientExtensions(clientExtensions);
             return;
         }
@@ -462,6 +463,7 @@ public class TlsServerImpl
         }
         else
         {
+
             int chosenProtectionProfile
                 = DtlsControlImpl.chooseSRTPProtectionProfile(
                         useSRTPData.getProtectionProfiles());
