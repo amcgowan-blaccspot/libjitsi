@@ -16,6 +16,7 @@
 package org.jitsi.impl.neomedia.transform.dtls;
 
 import java.io.*;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -97,8 +98,15 @@ public class DatagramTransportImpl
      * on data/RTP packets or {@link Component#RTCP} if the new instance is to
      * work on control/RTCP packets
      */
+    private String debugId = "";
     public DatagramTransportImpl(int componentID)
     {
+        this(componentID, UUID.randomUUID().toString());
+    }
+    public DatagramTransportImpl(int componentID, String debugId)
+    {
+        this.debugId = debugId;
+
         switch (componentID)
         {
         case Component.RTCP:
@@ -108,6 +116,8 @@ public class DatagramTransportImpl
         default:
             throw new IllegalArgumentException("componentID");
         }
+
+        logger.info("[FMDB] - DatagramTransportImpl - CREATED - " + this.debugId);
 
         receiveQCapacity = RTPConnectorOutputStream.PACKET_QUEUE_CAPACITY;
         receiveQ = new ArrayBlockingQueue<>(receiveQCapacity);
@@ -190,6 +200,7 @@ public class DatagramTransportImpl
             logger.error(msg, ise);
             throw ise;
         }
+
 
         // Write synchronously in order to avoid our packet getting stuck in the
         // write queue (in case it is blocked waiting for DTLS to finish, for
@@ -334,6 +345,7 @@ public class DatagramTransportImpl
     public int receive(byte[] buf, int off, int len, int waitMillis)
         throws IOException
     {
+        logger.info("[FMDB] - DatagramTransportImpl - Receive - " + this.debugId);
         long enterTime = System.currentTimeMillis();
 
         /*
@@ -472,8 +484,9 @@ public class DatagramTransportImpl
     public void send(byte[] buf, int off, int len)
         throws IOException
     {
-        assertNotClosed(false);
 
+        assertNotClosed(false);
+        logger.info("[FMDB] - DatagramTransportImpl - Send - " + this.debugId);
         // If possible, construct a single datagram from multiple DTLS records.
         if (len >= DtlsPacketTransformer.DTLS_RECORD_HEADER_LENGTH)
         {
@@ -503,6 +516,7 @@ public class DatagramTransportImpl
                 case HandshakeType.server_key_exchange:
                 case HandshakeType.session_ticket:
                 case HandshakeType.supplemental_data:
+                    logger.info("[FMDB] - Seeing possible server hello " + msg_type + " " + Instant.now().toString() + " " + this.debugId);
                     endOfFlight = false;
                     break;
                 case HandshakeType.client_hello:
@@ -510,12 +524,13 @@ public class DatagramTransportImpl
                 case HandshakeType.hello_request:
                 case HandshakeType.hello_verify_request:
                 case HandshakeType.server_hello_done:
+                    logger.info("[FMDB] - Seeing Possible client hello! " + msg_type + " "  + Instant.now().toString() + " " + this.debugId);
                     endOfFlight = true;
                     break;
                 default:
                     endOfFlight = true;
                     logger.warn(
-                            "Unknown DTLS handshake message type: " + msg_type);
+                            "Unknown DTLS handshake message type: " + msg_type + " " + Instant.now().toString() + " " + this.debugId);
                     break;
                 }
                 // Do fall through!

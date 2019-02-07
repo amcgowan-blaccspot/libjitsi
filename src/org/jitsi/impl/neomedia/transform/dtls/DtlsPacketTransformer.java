@@ -18,6 +18,7 @@ package org.jitsi.impl.neomedia.transform.dtls;
 import java.beans.*;
 import java.io.*;
 import java.security.*;
+import java.time.Instant;
 import java.util.*;
 
 import org.bouncycastle.crypto.tls.*;
@@ -799,6 +800,7 @@ public class DtlsPacketTransformer
             String message,
             Throwable cause)
     {
+        logger.info("[FMDB] - DtlsPacketTransformer - AlertRaised - " + message);
         if (AlertLevel.warning == alertLevel
                 && AlertDescription.close_notify == alertDescription)
         {
@@ -915,6 +917,7 @@ public class DtlsPacketTransformer
             }
             else
             {
+                logger.info("[FMDB] - Receive queued " + Instant.now().toString() + " " + this.debugID);
                 datagramTransport.queueReceive(
                         pkt.getBuffer(), pkt.getOffset(), pkt.getLength());
             }
@@ -922,6 +925,7 @@ public class DtlsPacketTransformer
 
         if (outPkts == null)
         {
+            logger.info("[FMDB] - No outpackets returnring " + Instant.now().toString() + " " + this.debugID);
             return;
         }
 
@@ -930,6 +934,7 @@ public class DtlsPacketTransformer
 
         if (dtlsTransport == null)
         {
+            logger.info("[FMDB] - DTLSTransport is null " + Instant.now().toString() + " " + this.debugID);
             // The DTLS transport hasn't initialized yet.
         }
         else
@@ -948,6 +953,7 @@ public class DtlsPacketTransformer
                     byte[] buf = new byte[receiveLimit];
                     RawPacket p = new RawPacket(buf, 0, buf.length);
 
+                    logger.info("[FMDB] - DTLS process received " + this.debugID);
                     int received
                         = dtlsTransport.receive(
                                 buf, 0, buf.length,
@@ -955,6 +961,7 @@ public class DtlsPacketTransformer
 
                     if (received <= 0)
                     {
+                        logger.info("[FMDB] - No more data to receive " + this.debugID);
                         // No (more) application data was decoded.
                         break;
                     }
@@ -1055,7 +1062,7 @@ public class DtlsPacketTransformer
                 = (DTLSServerProtocol) dtlsProtocol;
             TlsServerImpl tlsServer = (TlsServerImpl) tlsPeer;
             if (this.isSrtpDisabled) {
-                logger.info("[FMDB] - Disabling srtp for single data channel");
+                logger.info("[FMDB] - Disabling srtp for single data channel " + this.debugID);
                 tlsServer.setSrtpDisabled();
             }
 
@@ -1071,6 +1078,15 @@ public class DtlsPacketTransformer
                         = dtlsServerProtocol.accept(
                                 tlsServer,
                                 datagramTransport);
+
+                    logger.info("[FMDB] - DtlsPacketTransformer - DTLS STarted - " + this.debugID);
+
+                    if (dtlsTransport != null) {
+                        logger.info("[FMDB] - DtlsPacketTransformer - Transport created - " + this.debugID);
+                    } else {
+                        logger.info("[FMDB] - DtlsPacketTransformer - Transport still null " + this.debugID);
+                    }
+
                     break;
                 }
                 catch (IOException ioe)
@@ -1309,7 +1325,7 @@ public class DtlsPacketTransformer
         tlsPeerHasRaisedCloseNotifyWarning = false;
 
         final DatagramTransportImpl datagramTransport
-            = new DatagramTransportImpl(componentID);
+            = new DatagramTransportImpl(componentID, this.debugID);
 
         datagramTransport.setConnector(connector);
 

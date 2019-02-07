@@ -447,6 +447,7 @@ public class TlsServerImpl
         logger.info("[FMDB] - Process Client Extensions");
         if (isSrtpDisabled())
         {
+
             logger.info("[FMDB] - TlsServerImpl - use_srtp check passed. Not getting client extensions");
             super.processClientExtensions(clientExtensions);
             logger.info("[FMDB] - TlsServerImpl - client extensions complete.");
