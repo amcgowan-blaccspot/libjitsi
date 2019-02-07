@@ -250,8 +250,11 @@ public class TlsServerImpl
     {
         Hashtable serverExtensions = getServerExtensionsOverride();
 
+        logger.info("[FMDB] - GetServerExtensions");
+
         if (isSrtpDisabled())
         {
+            logger.info("[FMDB] - Not getting SRTP extensions");
             return serverExtensions;
         }
 
@@ -441,10 +444,12 @@ public class TlsServerImpl
     public void processClientExtensions(Hashtable clientExtensions)
         throws IOException
     {
+        logger.info("[FMDB] - Process Client Extensions");
         if (isSrtpDisabled())
         {
-            logger.info("[FMDB] - TlsServerImpl - use_srtp check passed.");
+            logger.info("[FMDB] - TlsServerImpl - use_srtp check passed. Not getting client extensions");
             super.processClientExtensions(clientExtensions);
+            logger.info("[FMDB] - TlsServerImpl - client extensions complete.");
             return;
         }
 
